@@ -7,6 +7,3 @@ We are committed to providing a welcoming and inclusive environment for all cont
 - Be respectful and inclusive
 - Be collaborative
 - Provide constructive feedback
-
-## Enforcement
-Violations will be addressed appropriately.
