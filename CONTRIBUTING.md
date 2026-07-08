@@ -11,8 +11,3 @@
 3. Commit your changes
 4. Push to the branch
 5. Create a Pull Request
-
-## Testing
-- Unit tests: `cargo test --lib`
-- Integration tests: `cargo test --test '*'`
-- All tests: `cargo test --all`
