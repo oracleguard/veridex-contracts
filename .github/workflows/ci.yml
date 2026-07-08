@@ -1,0 +1,185 @@
+name: CI
+
+on:
+  push:
+    branches: ["main", "develop"]
+  pull_request:
+    branches: ["main", "develop"]
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: 1
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # Lint & Format
+  # ---------------------------------------------------------------------------
+  lint:
+    name: Lint & Format
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: "1.81.0"
+          targets: wasm32-unknown-unknown
+          components: rustfmt, clippy
+
+      - name: Cache Cargo registry
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
+
+      - name: Check formatting
+        run: cargo fmt --all -- --check
+
+      - name: Run Clippy (all targets)
+        run: cargo clippy --all-targets --all-features -- -D warnings
+
+  # ---------------------------------------------------------------------------
+  # Unit & Integration Tests
+  # ---------------------------------------------------------------------------
+  test:
+    name: Test (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: "1.81.0"
+          targets: wasm32-unknown-unknown
+          components: rustfmt, clippy
+
+      - name: Cache Cargo registry
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-test-${{ hashFiles('**/Cargo.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-test-
+
+      - name: Run all tests
+        run: cargo test --workspace -- --nocapture
+
+      - name: Run ledgerlens-score tests
+        run: cargo test --manifest-path contracts/ledgerlens-score/Cargo.toml -- --nocapture
+
+      - name: Run veridex-oracle tests
+        run: cargo test --manifest-path contracts/veridex-oracle/Cargo.toml -- --nocapture
+
+  # ---------------------------------------------------------------------------
+  # WASM Build
+  # ---------------------------------------------------------------------------
+  build-wasm:
+    name: Build WASM
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: "1.81.0"
+          targets: wasm32-unknown-unknown
+
+      - name: Cache Cargo registry
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-wasm-${{ hashFiles('**/Cargo.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-wasm-
+
+      - name: Build ledgerlens-score (WASM)
+        run: |
+          cargo build \
+            --manifest-path contracts/ledgerlens-score/Cargo.toml \
+            --target wasm32-unknown-unknown \
+            --release \
+            --no-default-features
+
+      - name: Build veridex-oracle (WASM)
+        run: |
+          cargo build \
+            --manifest-path contracts/veridex-oracle/Cargo.toml \
+            --target wasm32-unknown-unknown \
+            --release \
+            --no-default-features
+
+      - name: Report WASM sizes
+        run: |
+          echo "=== WASM artifact sizes ==="
+          ls -lh target/wasm32-unknown-unknown/release/*.wasm 2>/dev/null || echo "No .wasm files found"
+
+      - name: Upload WASM artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: wasm-artifacts
+          path: |
+            target/wasm32-unknown-unknown/release/ledgerlens_score.wasm
+            target/wasm32-unknown-unknown/release/veridex_oracle.wasm
+          retention-days: 30
+
+  # ---------------------------------------------------------------------------
+  # Security Audit
+  # ---------------------------------------------------------------------------
+  audit:
+    name: Security Audit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: "1.81.0"
+
+      - name: Install cargo-audit
+        run: cargo install --locked cargo-audit
+
+      - name: Run cargo audit
+        run: cargo audit
+
+  # ---------------------------------------------------------------------------
+  # Status check (aggregates all jobs for branch protection rules)
+  # ---------------------------------------------------------------------------
+  ci-success:
+    name: CI Success
+    needs: [lint, test, build-wasm, audit]
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Check all jobs
+        run: |
+          if [[ "${{ needs.lint.result }}" != "success" || \
+                "${{ needs.test.result }}" != "success" || \
+                "${{ needs.build-wasm.result }}" != "success" || \
+                "${{ needs.audit.result }}" != "success" ]]; then
+            echo "One or more CI jobs failed."
+            exit 1
+          fi
+          echo "All CI jobs passed."

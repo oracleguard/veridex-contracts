@@ -1,0 +1,21 @@
+[package]
+name = "ledgerlens-score"
+version = "0.1.0"
+edition = "2021"
+authors = ["Veridex Contributors"]
+description = "LedgerLens risk registry contract: stores and retrieves wallet/asset-pair risk scores"
+license = "Apache-2.0"
+repository = "https://github.com/oracleguard/veridex-contracts"
+keywords = ["soroban", "stellar", "defi", "risk", "oracle"]
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+soroban-sdk = { workspace = true }
+
+[dev-dependencies]
+soroban-sdk = { workspace = true, features = ["testutils"] }
+
+[features]
+testutils = ["soroban-sdk/testutils"]

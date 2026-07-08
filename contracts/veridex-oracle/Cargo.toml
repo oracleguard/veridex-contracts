@@ -1,0 +1,21 @@
+[package]
+name = "veridex-oracle"
+version = "0.1.0"
+edition = "2021"
+authors = ["Veridex Contributors"]
+description = "Veridex prediction market oracle: resolves outcomes and distributes winnings"
+license = "Apache-2.0"
+repository = "https://github.com/oracleguard/veridex-contracts"
+keywords = ["soroban", "stellar", "prediction-market", "oracle", "defi"]
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+soroban-sdk = { workspace = true }
+
+[dev-dependencies]
+soroban-sdk = { workspace = true, features = ["testutils"] }
+
+[features]
+testutils = ["soroban-sdk/testutils"]
