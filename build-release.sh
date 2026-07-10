@@ -1,5 +1,5 @@
 #!/bin/bash
 set -e
-echo "Building release..."
-cargo build --release
-echo "✓ Release build complete"
+echo "Building release (WASM)..."
+cargo build --release --target wasm32-unknown-unknown
+echo "✓ WASM release build complete"

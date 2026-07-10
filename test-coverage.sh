@@ -1,5 +1,5 @@
 #!/bin/bash
 set -e
-echo "Running tests with coverage..."
-cargo test --all --coverage
-echo "✓ Coverage report generated"
+echo "Running tests..."
+cargo test --all
+echo "✓ Tests complete"
