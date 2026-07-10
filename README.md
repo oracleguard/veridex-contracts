@@ -13,7 +13,7 @@ This repository contains two Soroban contracts:
 
 | Contract | Crate | Purpose |
 |---|---|---|
-| **LedgerLens Score** | `contracts/ledgerlens-score` | Risk registry storing wallet/asset-pair fraud scores from the LedgerLens off-chain engine |
+| **LedgerLens Score** | `contracts/veridex-score` | Risk registry storing wallet/asset-pair fraud scores from the LedgerLens off-chain engine |
 | **Veridex Oracle** | `contracts/veridex-oracle` | Prediction market lifecycle: creation, staking, outcome resolution, and winnings distribution |
 
 Both contracts are compiled to WASM and deployed on-chain. The off-chain [veridex-core](https://github.com/oracleguard/veridex-core) engine feeds data into these contracts.
@@ -33,7 +33,7 @@ veridex-contracts/
 │   └── workflows/
 │       └── ci.yml                     # GitHub Actions CI pipeline
 └── contracts/
-    ├── ledgerlens-score/
+    ├── veridex-score/
     │   ├── Cargo.toml
     │   └── src/lib.rs                 # LedgerLens Score contract + tests
     └── veridex-oracle/
@@ -45,7 +45,7 @@ veridex-contracts/
 
 ## Contracts
 
-### `ledgerlens-score`
+### `veridex-score`
 
 Stores risk/fraud scores produced by the [LedgerLens](https://github.com/oracleguard/veridex-core) off-chain engine (Benford's Law, Tarjan SCC ring analysis, causal AI ensemble).
 
@@ -243,7 +243,7 @@ make fmt
 The off-chain [veridex-core](https://github.com/oracleguard/veridex-core) engine:
 
 1. Runs Benford's Law + Tarjan SCC + causal AI analysis on market participants.
-2. Calls `submit_score` on `ledgerlens-score` with the resulting risk scores.
+2. Calls `submit_score` on `veridex-score` with the resulting risk scores.
 3. Monitors markets and calls `resolve_market` or `void_market` on `veridex-oracle` when outcomes are determined.
 
 ---

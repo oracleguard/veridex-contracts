@@ -1,7 +1,7 @@
 # Release Notes v1.0.0
 
 ## New Features
-- ledgerlens-score contract
+- veridex-score contract
 - veridex-oracle contract
 - Complete test suite
 - Production documentation

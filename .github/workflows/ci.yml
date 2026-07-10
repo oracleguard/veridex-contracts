@@ -80,8 +80,8 @@ jobs:
       - name: Run all tests
         run: cargo test --workspace -- --nocapture
 
-      - name: Run ledgerlens-score tests
-        run: cargo test --manifest-path contracts/ledgerlens-score/Cargo.toml -- --nocapture
+      - name: Run veridex-score tests
+        run: cargo test --manifest-path contracts/veridex-score/Cargo.toml -- --nocapture
 
       - name: Run veridex-oracle tests
         run: cargo test --manifest-path contracts/veridex-oracle/Cargo.toml -- --nocapture
@@ -113,10 +113,10 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-cargo-wasm-
 
-      - name: Build ledgerlens-score (WASM)
+      - name: Build veridex-score (WASM)
         run: |
           cargo build \
-            --manifest-path contracts/ledgerlens-score/Cargo.toml \
+            --manifest-path contracts/veridex-score/Cargo.toml \
             --target wasm32-unknown-unknown \
             --release \
             --no-default-features
@@ -139,7 +139,7 @@ jobs:
         with:
           name: wasm-artifacts
           path: |
-            target/wasm32-unknown-unknown/release/ledgerlens_score.wasm
+            target/wasm32-unknown-unknown/release/veridex_score.wasm
             target/wasm32-unknown-unknown/release/veridex_oracle.wasm
           retention-days: 30
 

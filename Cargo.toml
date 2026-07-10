@@ -1,7 +1,7 @@
 [workspace]
 resolver = "2"
 members = [
-    "contracts/ledgerlens-score",
+    "contracts/veridex-score",
     "contracts/veridex-oracle",
 ]
 

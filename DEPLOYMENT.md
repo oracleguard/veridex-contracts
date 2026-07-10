@@ -1,6 +1,6 @@
 # Deployment Guide
 
-Complete instructions for deploying `ledgerlens-score` and `veridex-oracle` to Stellar testnet and mainnet.
+Complete instructions for deploying `veridex-score` and `veridex-oracle` to Stellar testnet and mainnet.
 
 ---
 
@@ -83,18 +83,18 @@ make build
 ```
 
 Output WASMs will be at:
-- `target/wasm32-unknown-unknown/release/ledgerlens_score.wasm`
+- `target/wasm32-unknown-unknown/release/veridex_score.wasm`
 - `target/wasm32-unknown-unknown/release/veridex_oracle.wasm`
 
-### 2. Deploy ledgerlens-score
+### 2. Deploy veridex-score
 
 ```bash
 LEDGERLENS_CONTRACT=$(stellar contract deploy \
-  --wasm target/wasm32-unknown-unknown/release/ledgerlens_score.wasm \
+  --wasm target/wasm32-unknown-unknown/release/veridex_score.wasm \
   --source deployer \
   --network testnet)
 
-echo "ledgerlens-score: $LEDGERLENS_CONTRACT"
+echo "veridex-score: $LEDGERLENS_CONTRACT"
 ```
 
 ### 3. Deploy veridex-oracle
@@ -113,7 +113,7 @@ echo "veridex-oracle: $ORACLE_CONTRACT"
 ```bash
 ADMIN_ADDRESS=$(stellar keys address deployer)
 
-# Initialize ledgerlens-score
+# Initialize veridex-score
 stellar contract invoke \
   --id $LEDGERLENS_CONTRACT \
   --source deployer \
@@ -189,15 +189,15 @@ make build
 ### 3. Deploy
 
 ```bash
-# Deploy ledgerlens-score
+# Deploy veridex-score
 LEDGERLENS_MAINNET=$(stellar contract deploy \
-  --wasm target/wasm32-unknown-unknown/release/ledgerlens_score.wasm \
+  --wasm target/wasm32-unknown-unknown/release/veridex_score.wasm \
   --source mainnet-deployer \
   --network mainnet \
   --rpc-url https://rpc.mainnet.stellar.gateway.fm \
   --network-passphrase "Public Global Stellar Network ; September 2015")
 
-echo "ledgerlens-score mainnet: $LEDGERLENS_MAINNET"
+echo "veridex-score mainnet: $LEDGERLENS_MAINNET"
 
 # Deploy veridex-oracle
 ORACLE_MAINNET=$(stellar contract deploy \
@@ -280,7 +280,7 @@ make build
 
 # 2. Upload new WASM to the network (returns wasm_hash)
 WASM_HASH=$(stellar contract upload \
-  --wasm target/wasm32-unknown-unknown/release/ledgerlens_score.wasm \
+  --wasm target/wasm32-unknown-unknown/release/veridex_score.wasm \
   --source deployer \
   --network testnet)
 
@@ -302,7 +302,7 @@ stellar contract invoke \
 
 ```bash
 # Compute local hash
-stellar contract inspect --wasm target/wasm32-unknown-unknown/release/ledgerlens_score.wasm
+stellar contract inspect --wasm target/wasm32-unknown-unknown/release/veridex_score.wasm
 
 # Compare with on-chain hash
 stellar contract info --id $LEDGERLENS_CONTRACT --network testnet
@@ -335,7 +335,7 @@ Update this table after each deployment:
 
 | Network | Contract | Address |
 |---|---|---|
-| Testnet | ledgerlens-score | `TBD` |
+| Testnet | veridex-score | `TBD` |
 | Testnet | veridex-oracle | `TBD` |
-| Mainnet | ledgerlens-score | `TBD` |
+| Mainnet | veridex-score | `TBD` |
 | Mainnet | veridex-oracle | `TBD` |

@@ -14,7 +14,7 @@
 
 SHELL := /bin/bash
 .PHONY: all build test fmt lint clean deploy-testnet deploy-mainnet check-tools \
-        build-ledgerlens build-oracle install-soroban
+        build-veridex build-oracle install-soroban
 
 # ---------------------------------------------------------------------------
 # Variables
@@ -28,7 +28,7 @@ RPC_MAINNET      ?= https://rpc.mainnet.stellar.gateway.fm
 DEPLOYER_KEY     ?= deployer   # stellar key name from ~/.config/stellar/
 
 WASM_DIR   := target/wasm32-unknown-unknown/release
-LL_WASM    := $(WASM_DIR)/ledgerlens_score.wasm
+LL_WASM    := $(WASM_DIR)/veridex_score.wasm
 ORACLE_WASM:= $(WASM_DIR)/veridex_oracle.wasm
 
 # ---------------------------------------------------------------------------
@@ -57,12 +57,12 @@ install-soroban:
 # ---------------------------------------------------------------------------
 # Build
 # ---------------------------------------------------------------------------
-build: build-ledgerlens build-oracle
+build: build-veridex build-oracle
 
-build-ledgerlens:
-	@echo "==> Building ledgerlens-score..."
+build-veridex:
+	@echo "==> Building veridex-score..."
 	$(CARGO) build \
-	    --manifest-path contracts/ledgerlens-score/Cargo.toml \
+	    --manifest-path contracts/veridex-score/Cargo.toml \
 	    --target wasm32-unknown-unknown \
 	    --release \
 	    --no-default-features
@@ -84,9 +84,9 @@ test:
 	@echo "==> Running all contract tests..."
 	$(CARGO) test --workspace -- --nocapture
 
-test-ledgerlens:
-	@echo "==> Testing ledgerlens-score..."
-	$(CARGO) test --manifest-path contracts/ledgerlens-score/Cargo.toml -- --nocapture
+test-veridex:
+	@echo "==> Testing veridex-score..."
+	$(CARGO) test --manifest-path contracts/veridex-score/Cargo.toml -- --nocapture
 
 test-oracle:
 	@echo "==> Testing veridex-oracle..."
@@ -119,14 +119,14 @@ clean:
 # ---------------------------------------------------------------------------
 deploy-testnet: build
 	@echo "==> Deploying to Stellar testnet..."
-	@echo "    Deploying ledgerlens-score..."
+	@echo "    Deploying veridex-score..."
 	stellar contract deploy \
 	    --wasm $(LL_WASM) \
 	    --source $(DEPLOYER_KEY) \
 	    --network $(NETWORK_TESTNET) \
 	    --rpc-url $(RPC_TESTNET) \
-	    | tee /tmp/ledgerlens-testnet-id.txt
-	@echo "    ledgerlens-score contract ID: $$(cat /tmp/ledgerlens-testnet-id.txt)"
+	    | tee /tmp/veridex-testnet-id.txt
+	@echo "    veridex-score contract ID: $$(cat /tmp/veridex-testnet-id.txt)"
 
 	@echo "    Deploying veridex-oracle..."
 	stellar contract deploy \
@@ -150,13 +150,13 @@ deploy-mainnet: build
 	@echo ""
 	@sleep 10
 
-	@echo "==> Deploying ledgerlens-score to mainnet..."
+	@echo "==> Deploying veridex-score to mainnet..."
 	stellar contract deploy \
 	    --wasm $(LL_WASM) \
 	    --source $(DEPLOYER_KEY) \
 	    --network $(NETWORK_MAINNET) \
 	    --rpc-url $(RPC_MAINNET) \
-	    | tee /tmp/ledgerlens-mainnet-id.txt
+	    | tee /tmp/veridex-mainnet-id.txt
 
 	@echo "==> Deploying veridex-oracle to mainnet..."
 	stellar contract deploy \
@@ -167,7 +167,7 @@ deploy-mainnet: build
 	    | tee /tmp/oracle-mainnet-id.txt
 
 	@echo "==> Mainnet deployment complete."
-	@echo "    ledgerlens-score: $$(cat /tmp/ledgerlens-mainnet-id.txt)"
+	@echo "    veridex-score: $$(cat /tmp/veridex-mainnet-id.txt)"
 	@echo "    veridex-oracle:   $$(cat /tmp/oracle-mainnet-id.txt)"
 
 # ---------------------------------------------------------------------------
@@ -183,7 +183,7 @@ endif
 ifndef ORACLE_CONTRACT
 	$(error ORACLE_CONTRACT is not set)
 endif
-	@echo "==> Initializing ledgerlens-score on testnet..."
+	@echo "==> Initializing veridex-score on testnet..."
 	stellar contract invoke \
 	    --id $(LEDGERLENS_CONTRACT) \
 	    --source $(DEPLOYER_KEY) \
