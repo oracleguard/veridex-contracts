@@ -1,12 +1,12 @@
 [workspace]
 resolver = "2"
 members = [
-    "contracts/veridex-score",
+    "contracts/ledgerlens-score",
     "contracts/veridex-oracle",
 ]
 
 [workspace.dependencies]
-soroban-sdk = { version = "21.7.6", features = [] }
+soroban-sdk = { version = "20.11", features = [] }
 
 [profile.release]
 opt-level = "z"

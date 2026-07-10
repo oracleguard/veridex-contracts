@@ -62,7 +62,7 @@ build: build-veridex build-oracle
 build-veridex:
 	@echo "==> Building veridex-score..."
 	$(CARGO) build \
-	    --manifest-path contracts/veridex-score/Cargo.toml \
+	    --manifest-path contracts/ledgerlens-score/Cargo.toml \
 	    --target wasm32-unknown-unknown \
 	    --release \
 	    --no-default-features
@@ -86,7 +86,7 @@ test:
 
 test-veridex:
 	@echo "==> Testing veridex-score..."
-	$(CARGO) test --manifest-path contracts/veridex-score/Cargo.toml -- --nocapture
+	$(CARGO) test --manifest-path contracts/ledgerlens-score/Cargo.toml -- --nocapture
 
 test-oracle:
 	@echo "==> Testing veridex-oracle..."

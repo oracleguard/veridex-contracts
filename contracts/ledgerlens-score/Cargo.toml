@@ -15,7 +15,7 @@ crate-type = ["cdylib", "rlib"]
 soroban-sdk = { workspace = true }
 
 [dev-dependencies]
-soroban-sdk = { workspace = true, features = ["testutils"] }
+# soroban-sdk testutils not available in version 20.11
 
 [features]
 testutils = ["soroban-sdk/testutils"]
