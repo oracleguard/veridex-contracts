@@ -24,8 +24,8 @@ jobs:
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@v1
         with:
-          toolchain: "1.81.0"
-          targets: wasm32-unknown-unknown
+          toolchain: "1.97.0"
+          targets: wasm32v1-none
           components: rustfmt, clippy
 
       - name: Cache Cargo registry
@@ -62,8 +62,8 @@ jobs:
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@v1
         with:
-          toolchain: "1.81.0"
-          targets: wasm32-unknown-unknown
+          toolchain: "1.97.0"
+          targets: wasm32v1-none
           components: rustfmt, clippy
 
       - name: Cache Cargo registry
@@ -99,8 +99,8 @@ jobs:
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@v1
         with:
-          toolchain: "1.81.0"
-          targets: wasm32-unknown-unknown
+          toolchain: "1.97.0"
+          targets: wasm32v1-none
 
       - name: Cache Cargo registry
         uses: actions/cache@v4
@@ -117,7 +117,7 @@ jobs:
         run: |
           cargo build \
             --manifest-path contracts/ledgerlens-score/Cargo.toml \
-            --target wasm32-unknown-unknown \
+            --target wasm32v1-none \
             --release \
             --no-default-features
 
@@ -125,20 +125,20 @@ jobs:
         run: |
           cargo build \
             --manifest-path contracts/veridex-oracle/Cargo.toml \
-            --target wasm32-unknown-unknown \
+            --target wasm32v1-none \
             --release \
             --no-default-features
 
       - name: Report WASM sizes
         run: |
           echo "=== WASM artifact sizes ==="
-          ls -lh target/wasm32-unknown-unknown/release/*.wasm 2>/dev/null || echo "No .wasm files found"
+          ls -lh target/wasm32v1-none/release/*.wasm 2>/dev/null || echo "No .wasm files found"
 
       - name: Upload WASM artifacts
         uses: actions/upload-artifact@v4
         with:
           name: wasm-artifacts
-          path: target/wasm32-unknown-unknown/release/*.wasm
+          path: target/wasm32v1-none/release/*.wasm
           retention-days: 30
 
   # ---------------------------------------------------------------------------
@@ -154,7 +154,7 @@ jobs:
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@v1
         with:
-          toolchain: "1.81.0"
+          toolchain: "1.97.0"
 
       - name: Install cargo-audit
         run: cargo install --locked cargo-audit

@@ -21,9 +21,7 @@
 
 #![no_std]
 
-use soroban_sdk::{
-    contract, contractimpl, contracttype, symbol_short, token, Address, Env, Vec,
-};
+use soroban_sdk::{contract, contractimpl, contracttype, symbol_short, token, Address, Env, Vec};
 
 // ---------------------------------------------------------------------------
 // Storage key types
@@ -33,8 +31,8 @@ use soroban_sdk::{
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum DataKey {
     Admin,
-    Market(u64),           // market_id → MarketState
-    Stake(u64, Address),   // (market_id, participant) → i128
+    Market(u64),         // market_id → MarketState
+    Stake(u64, Address), // (market_id, participant) → i128
 }
 
 // ---------------------------------------------------------------------------
@@ -97,11 +95,7 @@ impl VeridexOracle {
     /// # Panics
     /// Panics if the contract is already initialized.
     pub fn initialize(env: Env, admin: Address) {
-        if env
-            .storage()
-            .instance()
-            .has(&symbol_short!("ADMIN"))
-        {
+        if env.storage().instance().has(&symbol_short!("ADMIN")) {
             panic!("already initialized");
         }
         env.storage()
@@ -207,13 +201,7 @@ impl VeridexOracle {
     /// - If staking is closed (`close_time` passed).
     /// - If `outcome >= outcome_count`.
     /// - If `amount <= 0`.
-    pub fn stake(
-        env: Env,
-        market_id: u64,
-        participant: Address,
-        outcome: u32,
-        amount: i128,
-    ) {
+    pub fn stake(env: Env, market_id: u64, participant: Address, outcome: u32, amount: i128) {
         participant.require_auth();
 
         if amount <= 0 {
@@ -234,7 +222,7 @@ impl VeridexOracle {
 
         // Transfer tokens in.
         let token_client = token::TokenClient::new(&env, &state.token);
-        token_client.transfer(&participant, &env.current_contract_address(), &amount);
+        token_client.transfer(&participant, env.current_contract_address(), &amount);
 
         // Update per-outcome and total stake.
         let current = state.outcome_stakes.get(outcome).unwrap_or(0i128);
@@ -247,11 +235,7 @@ impl VeridexOracle {
 
         // Track individual participant stake (accumulate on multiple calls).
         let stake_key = DataKey::Stake(market_id, participant.clone());
-        let prev_stake: i128 = env
-            .storage()
-            .persistent()
-            .get(&stake_key)
-            .unwrap_or(0i128);
+        let prev_stake: i128 = env.storage().persistent().get(&stake_key).unwrap_or(0i128);
         env.storage()
             .persistent()
             .set(&stake_key, &(prev_stake + amount));
@@ -344,11 +328,7 @@ impl VeridexOracle {
         }
 
         let stake_key = DataKey::Stake(market_id, participant.clone());
-        let participant_stake: i128 = env
-            .storage()
-            .persistent()
-            .get(&stake_key)
-            .unwrap_or(0i128);
+        let participant_stake: i128 = env.storage().persistent().get(&stake_key).unwrap_or(0i128);
 
         if participant_stake == 0 {
             panic!("no stake found for participant");
@@ -360,7 +340,9 @@ impl VeridexOracle {
                 participant_stake
             }
             MarketStatus::Resolved => {
-                let winning = state.winning_outcome.expect("resolved market must have outcome");
+                let winning = state
+                    .winning_outcome
+                    .expect("resolved market must have outcome");
                 let winning_pool = state.outcome_stakes.get(winning).unwrap_or(0i128);
 
                 if winning_pool == 0 {
@@ -376,12 +358,11 @@ impl VeridexOracle {
                 // Payout = (participant_stake / winning_pool) * total_stake
                 // Computed without floating point via integer arithmetic:
                 // payout = participant_stake * total_stake / winning_pool
-                let payout = (participant_stake as i128)
+                participant_stake
                     .checked_mul(state.total_stake)
                     .expect("overflow in payout calculation")
                     .checked_div(winning_pool)
-                    .expect("division by zero in payout");
-                payout
+                    .expect("division by zero in payout")
             }
             MarketStatus::Open => panic!("market is not yet resolved"),
         };
@@ -408,10 +389,7 @@ impl VeridexOracle {
     /// Return the stake held by `participant` in `market_id`.
     pub fn get_stake(env: Env, market_id: u64, participant: Address) -> i128 {
         let stake_key = DataKey::Stake(market_id, participant);
-        env.storage()
-            .persistent()
-            .get(&stake_key)
-            .unwrap_or(0i128)
+        env.storage().persistent().get(&stake_key).unwrap_or(0i128)
     }
 
     /// Return the next market ID that will be assigned.
@@ -454,11 +432,9 @@ impl VeridexOracle {
 
     fn extend_market_ttl(env: &Env, market_id: u64) {
         // Extend to ~1 year of ledger closings.
-        env.storage().persistent().extend_ttl(
-            &DataKey::Market(market_id),
-            6_307_200,
-            6_307_200,
-        );
+        env.storage()
+            .persistent()
+            .extend_ttl(&DataKey::Market(market_id), 6_307_200, 6_307_200);
     }
 }
 
@@ -483,7 +459,6 @@ mod test {
         admin: Address,
         client: VeridexOracleClient<'static>,
         token: Address,
-        token_admin: Address,
     }
 
     fn setup() -> TestEnv {
@@ -493,7 +468,7 @@ mod test {
         // Set initial ledger state.
         env.ledger().set(LedgerInfo {
             timestamp: 1_000_000,
-            protocol_version: 21,
+            protocol_version: 27,
             sequence_number: 100,
             network_id: Default::default(),
             base_reserve: 10,
@@ -502,7 +477,7 @@ mod test {
             max_entry_ttl: 10_000_000,
         });
 
-        let contract_id = env.register_contract(None, VeridexOracle);
+        let contract_id = env.register(VeridexOracle, ());
         let client = VeridexOracleClient::new(&env, &contract_id);
 
         let admin = Address::generate(&env);
@@ -519,7 +494,6 @@ mod test {
             admin,
             client,
             token,
-            token_admin,
         }
     }
 
@@ -530,7 +504,8 @@ mod test {
 
     fn make_market(t: &TestEnv) -> u64 {
         let desc = String::from_str(&t.env, "Will XLM hit $1 by EOY?");
-        t.client.create_market(&desc, &t.token, &2_000_000u64, &2u32)
+        t.client
+            .create_market(&desc, &t.token, &2_000_000u64, &2u32)
     }
 
     // -----------------------------------------------------------------------
@@ -586,7 +561,8 @@ mod test {
     fn test_create_market_single_outcome_panics() {
         let t = setup();
         let desc = String::from_str(&t.env, "bad market");
-        t.client.create_market(&desc, &t.token, &2_000_000u64, &1u32);
+        t.client
+            .create_market(&desc, &t.token, &2_000_000u64, &1u32);
     }
 
     #[test]

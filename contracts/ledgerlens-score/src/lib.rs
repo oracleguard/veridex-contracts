@@ -19,9 +19,7 @@
 
 #![no_std]
 
-use soroban_sdk::{
-    contract, contractimpl, contracttype, symbol_short, Address, Env, String,
-};
+use soroban_sdk::{contract, contractimpl, contracttype, symbol_short, Address, Env, String};
 
 // ---------------------------------------------------------------------------
 // Storage key types
@@ -58,12 +56,6 @@ pub struct RiskScore {
 }
 
 // ---------------------------------------------------------------------------
-// Storage key symbols
-// ---------------------------------------------------------------------------
-
-const ADMIN_KEY: &str = "ADMIN";
-
-// ---------------------------------------------------------------------------
 // Contract
 // ---------------------------------------------------------------------------
 
@@ -82,11 +74,7 @@ impl LedgerLensScore {
     /// # Panics
     /// Panics if the contract has already been initialized.
     pub fn initialize(env: Env, admin: Address) {
-        if env
-            .storage()
-            .instance()
-            .has(&symbol_short!("ADMIN"))
-        {
+        if env.storage().instance().has(&symbol_short!("ADMIN")) {
             panic!("already initialized");
         }
         env.storage()
@@ -214,7 +202,7 @@ mod test {
     fn setup() -> (Env, Address, LedgerLensScoreClient<'static>) {
         let env = Env::default();
         env.mock_all_auths();
-        let contract_id = env.register_contract(None, LedgerLensScore);
+        let contract_id = env.register(LedgerLensScore, ());
         let client = LedgerLensScoreClient::new(&env, &contract_id);
         let admin = Address::generate(&env);
         client.initialize(&admin);

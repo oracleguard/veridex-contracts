@@ -1,5 +1,6 @@
 /target
 **/*.rs.bk
+**/test_snapshots/
 .env
 .env.*
 *.wasm
